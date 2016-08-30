@@ -98,16 +98,19 @@
                 NSError *error = [xmppMessage errorMessage];
                 message.error = error;
                 NSString *errorText = [[xmppMessage elementForName:@"error"] elementForName:@"text"].stringValue;
+                if ([errorText containsString:@"OTR Error"]) {
+                    // automatically renegotiate a new session when there's an error
+                    [[OTRKit sharedInstance] initiateEncryptionWithUsername:username accountName:account.username protocol:account.protocolTypeString];
+                }
                 if (!message.text) {
+		    return; //do nothing - we don't have a decent error display UI for now
+	            /**
                     if (errorText) {
                         message.text = errorText;
                     } else {
                         message.text = error.localizedDescription;
                     }
-                }
-                if ([errorText containsString:@"OTR Error"]) {
-                    // automatically renegotiate a new session when there's an error
-                    [[OTRKit sharedInstance] initiateEncryptionWithUsername:username accountName:account.username protocol:account.protocolTypeString];
+		    **/
                 }
                 [message saveWithTransaction:transaction];
                 return;
